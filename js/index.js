@@ -1,117 +1,71 @@
 'use strict'
 
-class Transport {
-    constructor (name, model, year, weight, speed) {
-        this.name = name;
+class Vehicle {
+    constructor(dimensions, brand, model, manufactureDate) {
+        this.dimensions = dimensions;
+        this.brand = brand;
         this.model = model;
-        this.year = year;
-        this.weight = weight;
-        this.speed = speed;
+        this.manufactureDate = manufactureDate;
+    };
+    getMaxSize() {
+        return Math.max(...Object.values(this.dimensions));
+    };
+    getAge() {
+        return Math.round( (new Date() - this.manufactureDate) / (24 * 60 * 60 * 1000) );
+    };
+};
+
+class PassengerTransport extends Vehicle {
+    constructor(dimensions, brand, model, manufactureDate, passengerLimit, passengerCount) {
+        super(dimensions, brand, model, manufactureDate);
+        this.passengerLimit = passengerLimit;
+        this.passengerCount = passengerCount;
+    };
+    addPassenger() {
+        console.log('');
+        console.log(`${this.brand} ${this.model} - manufactured ${super.getAge()} days ago`);
+        console.log(`passengerLimit - ${this.passengerLimit}, passengerCount - ${this.passengerCount}`);
+        return this.passengerLimit - this.passengerCount > 0 ? !!this.passengerCount++ : false;
+    }; 
+};
+
+class FreightTransport extends Vehicle {
+    constructor(dimensions, brand, model, manufactureDate, capacity) {
+        super(dimensions, brand, model, manufactureDate);
+        this.capacity = capacity;
     }
-    showMiddleSpeed() {
-        console.log(`Middle speed of ${this.name} ${this.model} is ${this.speed} km/h`);
-    }
-    roadCounter(days = 1, seasonName = 'winter') {
-        let counter = 0;
-        let season = seasonName;
-        const self = this;
-        
-        return function() {
-            for(let i = 0; i < days; i++) {
-                counter += Math.round( Math.random() * 500);
-            };
+    checkLoadingPossibility() {
+        let loadLimit = 0;
+        let self = this;
+
+        return function(weight) {
+            loadLimit += weight;
             
-            console.log(`${self.name} ${self.model} drove ${counter} kilometres in ${seasonName}. ${days} days in the race`);
-            return [counter, season, days];
+            console.log('');
+            console.log('weight :>> ', weight, '| loadLimit :>> ', loadLimit, '| capacity :>> ', self.capacity);
+
+            return loadLimit < self.capacity;
         };
-    }
-    showInfo() {
-        console.log(`${this.name} ${this.model}, ${this.year} year, ${this.weight} kg}`);
-    }
-};
-
-class FreightTransport extends Transport {
-    constructor(name, model, year, weight, speed) {
-        super(name, model, year, weight, speed);
-    }
-    showMaxSpeed() {
-        super.showMiddleSpeed();
-        console.log(`Max speed of ${this.name} ${this.model} is ${Math.floor( this.speed * 1.7 )} km/h`);
-    };
-    showInfo() {
-        super.showInfo();
-        console.log('Freight Transport!');
-    }
-};
-
-class PrivateTransport extends Transport {
-    constructor(name, model, year, weight, speed, country) {
-        super(name, model, year, weight, speed);    
-        this.country = country;
-    }
-    #price = 10000;
-
-    get price () {
-        return this.#price;
-    }
-    set price (val) {
-        if (val <= 0) {
-            throw new RangeError('Price is too small!');
-        };
-        if (typeof val !== 'number') {
-            throw new TypeError('Price is not a number');
-        };
-
-        this.#price = val;
-    }
-    showInfo() {
-        console.log(`${this.name} ${this.model} costs ${this.price}$. Made in ${this.country}`);
-    }
-    showMaxSpeed () {
-        console.log(`Max speed of ${this.name} ${this.model} is ${Math.floor( this.speed * 1.7 )} km/h`);
-    };
-}
-
-
-const man = new FreightTransport('MAN', "C55", 2014, 5000, 90);
-man.showMaxSpeed();
-
-// debugger;
-const manCounter = man.roadCounter(3, 'spring');
-
-manCounter();
-
-const lamborghini = new PrivateTransport('Lamborghini', 'Aventador', 2010, 1500, 180, 'Italy');
-lamborghini.price = 900000;
-lamborghini.showInfo();
-
-console.log('lamborghini :>> ', lamborghini);
-const lamborghiniCounter = lamborghini.roadCounter(5, 'summer');
-lamborghiniCounter();
-
-
-
-//  closure
-const add = addNum(5);
-const result = add(10); // => 15
-console.log('result :>> ', result);
-
-function addNum(n) {
-    
-    return function(m) {
-        if (typeof n !== 'number' || typeof m !== 'number') {
-            throw new TypeError(`This value is not a number`);
-        };
-        if (!Number.isFinite(n) || !Number.isFinite(m)) {
-            throw new RangeError(`This value isn't correct. Enter another...`);
-        };
-
-        return n + m;
-    };
+    };     
 };
 
 
+const train = new Vehicle({a: 1200, b: 3, c: 5}, 'Druzhba', 'Meteor', new Date(1999, 11, 2));
+console.log('train.getMaxSize() :>> ', train.getMaxSize());
+console.log('train.getAge() :>> ', train.getAge());
 
+
+const sprinter = new PassengerTransport({a: 5, b: 3, c: 2.2}, 'Mercedes', 'Sprinter', new Date(2015, 3, 1), 18, 17);
+console.log('sprinter.addPassenger() :>> ', sprinter.addPassenger());
+console.log('sprinter.addPassenger() :>> ', sprinter.addPassenger());
+
+
+const kamaz = new FreightTransport({a: 50, b: 4, c: 3}, 'Kamaz', 'Ultra', new Date(1974, 11, 2), 2000);
+const kamazLoading = kamaz.checkLoadingPossibility();
+console.log('kamazLoading(300):>> ', kamazLoading(300));
+console.log('kamazLoading(200) :>> ', kamazLoading(200));
+console.log(' kamazLoading(1100):>> ', kamazLoading(1100));
+console.log('kamazLoading(500) :>> ', kamazLoading(500));
 
 
 
